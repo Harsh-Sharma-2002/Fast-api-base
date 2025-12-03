@@ -5,6 +5,9 @@ from typing import Optional
 
 app = FastAPI()
 
+my_posts = [{"title": "title of post 1", "content": "content of post 1","published": True, "rating": 5, "id": 1},
+            {"title": "title of post 2", "content": "content of post 2", "published": False, "rating": 4, "id": 2}]
+
 class Post(BaseModel):
     title: str
     content: str
@@ -16,7 +19,14 @@ class Post(BaseModel):
 async def read_root():
     return {"Hello": "new World"}
 
-@app.post("/createpost")
+@app.get("/posts")
+async def get_post():
+    return {"data": my_posts}
+
+@app.post("/posts")
 async def create_post(new_post: Post):
-    print(new_post.published)
+    print(new_post.dict())
+    dict_temp = new_post.dict()
+    dict_temp['id'] = len(my_posts) + 1
+    my_posts.append(dict_temp)
     return {"Data": "new_post"}
