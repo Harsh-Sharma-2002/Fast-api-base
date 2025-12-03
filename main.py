@@ -24,10 +24,17 @@ async def read_root():
 async def get_post():
     return {"data": my_posts}
 
+@app.get("/posts/{id}")
+async def get_post(id: int):
+    for post in my_posts:
+        if post['id'] == id:
+            return {"post_details":post}
+    return {"Message": "Post not found"}
+
 @app.post("/posts")
 async def create_post(new_post: Post):
     print(new_post.dict())
     dict_temp = new_post.dict()
     dict_temp['id'] = randrange(0, 1000000)
     my_posts.append(dict_temp)
-    return {"Data": "new_post"}
+    return {"Data": dict_temp}
