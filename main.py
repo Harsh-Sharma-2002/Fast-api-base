@@ -29,14 +29,22 @@ async def get_post():
 async def get_post(id: int, Response: Response):
     post = find_post(id, my_posts)
     if post == None:
-        Response.status_code = status.HTTP_404_NOT_FOUND
-        return {"Message": "Post not found"}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"post with id: {id} was not found")
     return {"post_details": post}
 
-@app.post("/posts")
-async def create_post(new_post: Post):
-    print(new_post.dict())
+@app.post("/posts", status_code=status.HTTP_201_CREATED)
+def create_post(new_post: Post):
     dict_temp = new_post.dict()
     dict_temp['id'] = randrange(0, 1000000)
     my_posts.append(dict_temp)
     return {"Data": dict_temp}
+
+@app.delete("/posts/{id}")
+def delete_post(id: int):
+    post = find_post(id, my_posts)
+    if post == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"post with id: {id} does not exist")
+    my_posts.remove(post)
+    return {"message": "post deleted successfully"}
