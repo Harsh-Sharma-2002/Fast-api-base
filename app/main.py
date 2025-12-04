@@ -50,7 +50,7 @@ async def read_root():
 ###################################################################
 
 @app.get("/posts")
-async def get_post():
+def get_post():
     cursor.execute("SELECT * FROM posts")
     posts = cursor.fetchall()
     return {"data": posts}
