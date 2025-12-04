@@ -25,7 +25,7 @@ class Post(BaseModel):
 
 while(True):
     try:
-        conn = psycopg2.connect(host='localhost', database='fastapi', user='postgres', password='password123', cursor_factory=RealDictCursor)
+        conn = psycopg2.connect(host='localhost', database='fastapi', user='postgres', password='new_password', cursor_factory=RealDictCursor)
         cursor = conn.cursor()
         print("Database connection was successful")
         break
@@ -52,17 +52,21 @@ async def read_root():
 
 @app.get("/posts")
 async def get_post():
-    return {"data": my_posts}
+    cursor.execute("SELECT * FROM posts")
+    posts = cursor.fetchall()
+    return {"data": posts}
 
 ###################################################################
 
 @app.get("/posts/{id}")
 async def get_post(id: int, Response: Response):
-    post = find_post(id, my_posts)
-    if post == None:
+    cursor.execute("SELECT * FROM posts WHERE id = {id}".format(id=id))
+    cursor_post = cursor.fetchone()
+    if not cursor_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id: {id} was not found")
-    return {"post_details": post}
+    return {"post_details": cursor_post}
+  
 
 ###################################################################
 
