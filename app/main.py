@@ -8,20 +8,14 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
 from . import models
-from .database import engine, SessionLocal
+from .database import engine, get_db
 from sqlalchemy.orm import Session
-
+from sqlalchemy.orm import Session
 
 app = FastAPI()
 
 models.Base.metadata.create_all(bind = engine)
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 # my_posts = [{"title": "title of post 1", "content": "content of post 1","published": True, "rating": 5, "id": randrange(0,1000000)},
 #             {"title": "title of post 2", "content": "content of post 2", "published": False, "rating": 4, "id": randrange(0,1000000)}]
 
@@ -54,6 +48,10 @@ while(True):
 
 ###################################################################
 ###################################################################
+
+@app.get("/sqlalchemy")
+def test_alchemy(db: Session = Depends(get_db)):
+    return {"status"}
 
 @app.get("/")
 async def read_root():
