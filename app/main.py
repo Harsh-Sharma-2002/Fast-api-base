@@ -21,20 +21,20 @@ models.Base.metadata.create_all(bind = engine)
 
 ###################################################################
 
-class Post(BaseModel):
-    title: str
-    content: str
-    published: bool = True
-    rating: Optional[int] = None
 
-class UpdatePost(BaseModel):
-    title: Optional[str] = None
-    content: Optional[str] = None
-    published: Optional[bool] = True
-    rating: Optional[int] = None
 
 ###################################################################
 
+# while(True):
+#     try:
+#         conn = psycopg2.connect(host='localhost', database='fastapi', user='postgres', password='new_password', cursor_factory=RealDictCursor)
+#         cursor = conn.cursor()
+#         print("Database connection was successful")
+#         break
+#     except Exception as error:
+#         print("Connecting to database failed")
+#         print("Error:", error)
+#         time.sleep(2)
 # while(True):
 #     try:
 #         conn = psycopg2.connect(host='localhost', database='fastapi', user='postgres', password='new_password', cursor_factory=RealDictCursor)
@@ -49,10 +49,6 @@ class UpdatePost(BaseModel):
 ###################################################################
 ###################################################################
 
-@app.get("/sqlalchemy")
-def test_alchemy(db: Session = Depends(get_db)):
-    return {"status"}
-
 @app.get("/")
 async def read_root():
     return {"Hello": "new World"}
@@ -62,6 +58,7 @@ async def read_root():
 @app.get("/posts")
 def get_post(db: Session = Depends(get_db)):
     posts = db.query(models.PostModel).all()
+
     return {"data": posts}
 
 ###################################################################
@@ -104,15 +101,15 @@ def create_post(new_post: models.CreatePost,db: Session = Depends(get_db)):
 
 ###################################################################
 
-# @app.put("/posts/{id}")
-# def update_post(id: int, updated_post: models.UpdatePost):
-#     cursor.execute("UPDATE posts SET title = %s,content = %s,published = %s WHERE id = %s RETURNING *",
-#                    (updated_post.title, updated_post.content, updated_post.published, str(id)))
-#     updated_cursor_post = cursor.fetchone()
-#     conn.commit()
-#     if updated_cursor_post == None:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-#                             detail=f"post with id: {id} does not exist")
-#     return {"data": updated_cursor_post}
+@app.put("/posts/{id}")
+def update_post(id: int, updated_post: UpdatePost):
+    cursor.execute("UPDATE posts SET title = %s,content = %s,published = %s WHERE id = %s RETURNING *",
+                   (updated_post.title, updated_post.content, updated_post.published, str(id)))
+    updated_cursor_post = cursor.fetchone()
+    conn.commit()
+    if updated_cursor_post == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"post with id: {id} does not exist")
+    return {"data": updated_cursor_post}
        
  
