@@ -58,7 +58,6 @@ async def read_root():
 @app.get("/posts")
 def get_post(db: Session = Depends(get_db)):
     posts = db.query(models.PostModel).all()
-
     return {"data": posts}
 
 ###################################################################
@@ -101,15 +100,15 @@ def create_post(new_post: models.CreatePost,db: Session = Depends(get_db)):
 
 ###################################################################
 
-@app.put("/posts/{id}")
-def update_post(id: int, updated_post: UpdatePost):
-    cursor.execute("UPDATE posts SET title = %s,content = %s,published = %s WHERE id = %s RETURNING *",
-                   (updated_post.title, updated_post.content, updated_post.published, str(id)))
-    updated_cursor_post = cursor.fetchone()
-    conn.commit()
-    if updated_cursor_post == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"post with id: {id} does not exist")
-    return {"data": updated_cursor_post}
+# @app.put("/posts/{id}")
+# def update_post(id: int, updated_post: UpdatePost):
+#     cursor.execute("UPDATE posts SET title = %s,content = %s,published = %s WHERE id = %s RETURNING *",
+#                    (updated_post.title, updated_post.content, updated_post.published, str(id)))
+#     updated_cursor_post = cursor.fetchone()
+#     conn.commit()
+#     if updated_cursor_post == None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+#                             detail=f"post with id: {id} does not exist")
+#     return {"data": updated_cursor_post}
        
  
