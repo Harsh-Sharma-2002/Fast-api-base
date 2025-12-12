@@ -66,14 +66,14 @@ def get_post(db: Session = Depends(get_db)):
 
 ###################################################################
 
-@app.get("/posts/{id}")
-async def get_post(id: int, Response: Response): ## We take in id as int to avoid SQL injection
-    cursor.execute("SELECT * FROM posts WHERE id = %s", (str(id),)) ## Used extra comma to make it a tuple
-    cursor_post = cursor.fetchone()
-    if not cursor_post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"post with id: {id} was not found")
-    return {"post_details": cursor_post}
+# @app.get("/posts/{id}")
+# async def get_post(id: int, Response: Response): ## We take in id as int to avoid SQL injection
+#     cursor.execute("SELECT * FROM posts WHERE id = %s", (str(id),)) ## Used extra comma to make it a tuple
+#     cursor_post = cursor.fetchone()
+#     if not cursor_post:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+#                             detail=f"post with id: {id} was not found")
+#     return {"post_details": cursor_post}
   
 
 ###################################################################
@@ -92,27 +92,27 @@ def create_post(new_post: models.CreatePost,db: Session = Depends(get_db)):
 
 ###################################################################
 
-@app.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id: int):
-    cursor.execute("DELETE FROM posts WHERE id = %s RETURNING *", (str(id),))
-    deleted_post = cursor.fetchone()
-    conn.commit()
-    if deleted_post == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"post with id: {id} does not exist")
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+# @app.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
+# def delete_post(id: int):
+#     cursor.execute("DELETE FROM posts WHERE id = %s RETURNING *", (str(id),))
+#     deleted_post = cursor.fetchone()
+#     conn.commit()
+#     if deleted_post == None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+#                             detail=f"post with id: {id} does not exist")
+#     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 ###################################################################
 
-@app.put("/posts/{id}")
-def update_post(id: int, updated_post: models.UpdatePost):
-    cursor.execute("UPDATE posts SET title = %s,content = %s,published = %s WHERE id = %s RETURNING *",
-                   (updated_post.title, updated_post.content, updated_post.published, str(id)))
-    updated_cursor_post = cursor.fetchone()
-    conn.commit()
-    if updated_cursor_post == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"post with id: {id} does not exist")
-    return {"data": updated_cursor_post}
+# @app.put("/posts/{id}")
+# def update_post(id: int, updated_post: models.UpdatePost):
+#     cursor.execute("UPDATE posts SET title = %s,content = %s,published = %s WHERE id = %s RETURNING *",
+#                    (updated_post.title, updated_post.content, updated_post.published, str(id)))
+#     updated_cursor_post = cursor.fetchone()
+#     conn.commit()
+#     if updated_cursor_post == None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+#                             detail=f"post with id: {id} does not exist")
+#     return {"data": updated_cursor_post}
        
  
