@@ -21,37 +21,23 @@ models.Base.metadata.create_all(bind = engine)
 
 ###################################################################
 
-class Post(BaseModel):
-    title: str
-    content: str
-    published: bool = True
-    rating: Optional[int] = None
 
-class UpdatePost(BaseModel):
-    title: Optional[str] = None
-    content: Optional[str] = None
-    published: Optional[bool] = True
-    rating: Optional[int] = None
 
 ###################################################################
 
-while(True):
-    try:
-        conn = psycopg2.connect(host='localhost', database='fastapi', user='postgres', password='new_password', cursor_factory=RealDictCursor)
-        cursor = conn.cursor()
-        print("Database connection was successful")
-        break
-    except Exception as error:
-        print("Connecting to database failed")
-        print("Error:", error)
-        time.sleep(2)
+# while(True):
+#     try:
+#         conn = psycopg2.connect(host='localhost', database='fastapi', user='postgres', password='new_password', cursor_factory=RealDictCursor)
+#         cursor = conn.cursor()
+#         print("Database connection was successful")
+#         break
+#     except Exception as error:
+#         print("Connecting to database failed")
+#         print("Error:", error)
+#         time.sleep(2)
 
 ###################################################################
 ###################################################################
-
-@app.get("/sqlalchemy")
-def test_alchemy(db: Session = Depends(get_db)):
-    return {"status"}
 
 @app.get("/")
 async def read_root():
@@ -60,9 +46,8 @@ async def read_root():
 ###################################################################
 
 @app.get("/posts")
-def get_post():
-    cursor.execute("SELECT * FROM posts")
-    posts = cursor.fetchall()
+def get_post(db: Session = Depends(get_db)):
+    posts = db.query(models.PostModel).all()
     return {"data": posts}
 
 ###################################################################
@@ -80,12 +65,16 @@ async def get_post(id: int, Response: Response): ## We take in id as int to avoi
 ###################################################################
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_post(new_post: Post):
-    cursor.execute("INSERT INTO posts (title,content,published) VALUES (%s,%s,%s) RETURNING *",
-                   (new_post.title, new_post.content, new_post.published))
-    created_post = cursor.fetchone()
-    conn.commit()
-    return {"data": created_post}
+def create_post(new_post: models.CreatePost,db: Session = Depends(get_db)):
+    # cursor.execute("INSERT INTO posts (title,content,published) VALUES (%s,%s,%s) RETURNING *",
+    #                (new_post.title, new_post.content, new_post.published))
+    # created_post = cursor.fetchone()
+    # conn.commit()
+    new = models.PostModel(**new_post.dict())
+    db.add(new)
+    db.commit()
+    db.refresh(new)
+    return {"data": new}
 
 ###################################################################
 
@@ -102,7 +91,7 @@ def delete_post(id: int):
 ###################################################################
 
 @app.put("/posts/{id}")
-def update_post(id: int, updated_post: UpdatePost):
+def update_post(id: int, updated_post: models.UpdatePost):
     cursor.execute("UPDATE posts SET title = %s,content = %s,published = %s WHERE id = %s RETURNING *",
                    (updated_post.title, updated_post.content, updated_post.published, str(id)))
     updated_cursor_post = cursor.fetchone()
