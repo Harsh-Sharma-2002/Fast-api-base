@@ -10,7 +10,7 @@ import time
 from . import models
 from .database import engine, get_db
 from sqlalchemy.orm import Session
-from sqlalchemy.orm import Session
+
 
 app = FastAPI()
 
@@ -51,7 +51,9 @@ while(True):
 
 @app.get("/sqlalchemy")
 def test_alchemy(db: Session = Depends(get_db)):
-    return {"status"}
+    post = db.query(models.PostModel).all()
+    return {"data": post}
+
 
 @app.get("/")
 async def read_root():
