@@ -1,22 +1,17 @@
 from fastapi import FastAPI,Response,status,HTTPException,Depends
-from fastapi.params import Body
-from pydantic import BaseModel
-from typing import Optional,List
-from random import randrange
-from utils import find_post, find_index_post
-import psycopg2
-from psycopg2.extras import RealDictCursor
-import time
+from typing import List
 from . import models
-from . import schema
+from . import schema, utils
 from .database import engine, get_db
 from sqlalchemy.orm import Session
 
 
-app = FastAPI()
-
 models.Base.metadata.create_all(bind = engine)
 
+
+
+
+app = FastAPI()
 # my_posts = [{"title": "title of post 1", "content": "content of post 1","published": True, "rating": 5, "id": randrange(0,1000000)},
 #             {"title": "title of post 2", "content": "content of post 2", "published": False, "rating": 4, "id": randrange(0,1000000)}]
 
@@ -129,9 +124,22 @@ def update_post(id: int, updated_post: schema.UpdatePost, db: Session = Depends(
 
 @app.post("/users", status_code=status.HTTP_201_CREATED, response_model = schema.UserResponse)
 def create_user(user: schema.UserCreate, db: Session = Depends(get_db)):
+    
+    # Hashing password
+    hashed_password = utils.hash_password(user.password)
+    user.password = hashed_password
+
     new_user = models.Users(**user.dict())
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
     return new_user
+
+@app.get("/users/{id}", response_model = schema.UserResponse)
+def ge_user(id : int, db: Session = Depends(get_db)):
+    user = db.query(models.Users).filter(models.Users.id == id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail = f"user with id: {id} was not found")
+    return user
  
