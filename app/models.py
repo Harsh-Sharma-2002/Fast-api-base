@@ -2,9 +2,7 @@ from .database import Base
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
-from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime
+
 
 
 class PostModel(Base):
@@ -17,26 +15,14 @@ class PostModel(Base):
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
 
-class CreatePost(BaseModel):
-    title: str
-    content: str
-    published: Optional[bool] = True
+class User(Base):
+    __tablename__ = "users"
 
-class ResponsePost(BaseModel):
-    id: int
-    title: str
-    content: str
-    published: bool
-    created_at: datetime
+    id = Column(Integer, primary_key=True, unique=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    password = Column(String, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()')) 
 
-    class Config:
-        orm_mode = True # to work with sqlalchemy models fastapi works with.pydantic models so this will help in converting sqlalchemy model to pydantic model and sqlalchemy mdoel is python class so this will help in converting it to dict and then to json
 
-     
-
-class UpdatePost(BaseModel):
-    title: Optional[str] = None
-    content: Optional[str] = None
-    published: Optional[bool] = True
  
   

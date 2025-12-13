@@ -1,13 +1,14 @@
 from fastapi import FastAPI,Response,status,HTTPException,Depends
 from fastapi.params import Body
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional,List
 from random import randrange
 from utils import find_post, find_index_post
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
 from . import models
+from . import schema
 from .database import engine, get_db
 from sqlalchemy.orm import Session
 
@@ -38,7 +39,6 @@ models.Base.metadata.create_all(bind = engine)
 
 
 ###################################################################
-###################################################################
 
 @app.get("/")
 async def read_root():
@@ -46,14 +46,14 @@ async def read_root():
 
 ###################################################################
 
-@app.get("/posts")
+@app.get("/posts",response_model = List[schema.ResponsePost])
 def get_post(db: Session = Depends(get_db)):
     posts = db.query(models.PostModel).all()
-    return {"data": posts}
+    return posts
 
 ###################################################################
 
-@app.get("/posts/{id}",response_model = models.ResponsePost)
+@app.get("/posts/{id}",response_model = schema.ResponsePost)
 async def get_post(id: int,db: Session = Depends(get_db)): ## We take in id as int to avoid SQL injection
     #  cursor.execute("SELECT * FROM posts WHERE id = %s", (str(id),)) ## Used extra comma to make it a tuple
     #  cursor_post = cursor.fetchone()
@@ -70,7 +70,7 @@ async def get_post(id: int,db: Session = Depends(get_db)): ## We take in id as i
 ###################################################################
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_post(new_post: models.CreatePost,db: Session = Depends(get_db)):
+def create_post(new_post: schema.CreatePost,db: Session = Depends(get_db)):
     # cursor.execute("INSERT INTO posts (title,content,published) VALUES (%s,%s,%s) RETURNING *",
     #                (new_post.title, new_post.content, new_post.published))
     # created_post = cursor.fetchone()
@@ -102,8 +102,8 @@ def delete_post(id: int, db: Session = Depends(get_db)):
 
 ###################################################################
 
-@app.put("/posts/{id}",response_model = models.ResponsePost)
-def update_post(id: int, updated_post: models.UpdatePost, db: Session = Depends(get_db)):
+@app.put("/posts/{id}",response_model = schema.ResponsePost)
+def update_post(id: int, updated_post: schema.UpdatePost, db: Session = Depends(get_db)):
 #     cursor.execute("UPDATE posts SET title = %s,content = %s,published = %s WHERE id = %s RETURNING *",
 #                    (updated_post.title, updated_post.content, updated_post.published, str(id)))
 #     updated_cursor_post = cursor.fetchone()
