@@ -35,16 +35,7 @@ models.Base.metadata.create_all(bind = engine)
 #         print("Connecting to database failed")
 #         print("Error:", error)
 #         time.sleep(2)
-# while(True):
-#     try:
-#         conn = psycopg2.connect(host='localhost', database='fastapi', user='postgres', password='new_password', cursor_factory=RealDictCursor)
-#         cursor = conn.cursor()
-#         print("Database connection was successful")
-#         break
-#     except Exception as error:
-#         print("Connecting to database failed")
-#         print("Error:", error)
-#         time.sleep(2)
+
 
 ###################################################################
 ###################################################################
@@ -62,14 +53,18 @@ def get_post(db: Session = Depends(get_db)):
 
 ###################################################################
 
-# @app.get("/posts/{id}")
-# async def get_post(id: int, Response: Response): ## We take in id as int to avoid SQL injection
-#     cursor.execute("SELECT * FROM posts WHERE id = %s", (str(id),)) ## Used extra comma to make it a tuple
-#     cursor_post = cursor.fetchone()
-#     if not cursor_post:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-#                             detail=f"post with id: {id} was not found")
-#     return {"post_details": cursor_post}
+@app.get("/posts/{id}",response_model = models.ResponsePost)
+async def get_post(id: int,db: Session = Depends(get_db)): ## We take in id as int to avoid SQL injection
+    #  cursor.execute("SELECT * FROM posts WHERE id = %s", (str(id),)) ## Used extra comma to make it a tuple
+    #  cursor_post = cursor.fetchone()
+    #  if not cursor_post:
+    #      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+    #                          detail=f"post with id: {id} was not found")
+    post_id = db.query(models.PostModel).filter(models.PostModel.id == id).first()
+    if not post_id:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
+                            detail = f"post with id: {id} was not found")
+    return  post_id
   
 
 ###################################################################
@@ -88,20 +83,27 @@ def create_post(new_post: models.CreatePost,db: Session = Depends(get_db)):
 
 ###################################################################
 
-# @app.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
-# def delete_post(id: int):
+@app.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
+def delete_post(id: int, db: Session = Depends(get_db)):
 #     cursor.execute("DELETE FROM posts WHERE id = %s RETURNING *", (str(id),))
 #     deleted_post = cursor.fetchone()
 #     conn.commit()
 #     if deleted_post == None:
 #         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
 #                             detail=f"post with id: {id} does not exist")
+    to_delete_post = db.query(models.PostModel).filter(models.PostModel.id == id)
+    if to_delete_post.first() == None:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
+                            detail = f"post with id: {id} does not exist")
+    to_delete_post.delete(synchronize_session=False)
+    db.commit()
+
 #     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 ###################################################################
 
-# @app.put("/posts/{id}")
-# def update_post(id: int, updated_post: UpdatePost):
+@app.put("/posts/{id}",response_model = models.ResponsePost)
+def update_post(id: int, updated_post: models.UpdatePost, db: Session = Depends(get_db)):
 #     cursor.execute("UPDATE posts SET title = %s,content = %s,published = %s WHERE id = %s RETURNING *",
 #                    (updated_post.title, updated_post.content, updated_post.published, str(id)))
 #     updated_cursor_post = cursor.fetchone()
@@ -109,6 +111,15 @@ def create_post(new_post: models.CreatePost,db: Session = Depends(get_db)):
 #     if updated_cursor_post == None:
 #         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
 #                             detail=f"post with id: {id} does not exist")
-#     return {"data": updated_cursor_post}
+    post_query = db.query(models.PostModel).filter(models.PostModel.id == id)
+    post_up = post_query.first()
+    if post_up == None:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
+                            detail = f"post with id: {id} does not exist")
+    post_query.update(updated_post.dict(exclude_unset=True),synchronize_session=False)
+    db.commit()
+    db.refresh(post_up)
+
+    return post_up
        
  

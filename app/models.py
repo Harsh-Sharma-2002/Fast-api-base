@@ -30,7 +30,7 @@ class ResponsePost(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        orm_mode = True # to work with sqlalchemy models fastapi works with.pydantic models so this will help in converting sqlalchemy model to pydantic model and sqlalchemy mdoel is python class so this will help in converting it to dict and then to json
 
      
 
