@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional,List
 from datetime import datetime
 
@@ -23,3 +23,16 @@ class UpdatePost(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
     published: Optional[bool] = True
+
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserResponse(BaseModel):
+    id: int
+    email: EmailStr
+    created_at: datetime
+
+    class Config:
+        orm_mode = True

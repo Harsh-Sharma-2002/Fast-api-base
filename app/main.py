@@ -122,4 +122,16 @@ def update_post(id: int, updated_post: schema.UpdatePost, db: Session = Depends(
 
     return post_up
        
+
+###################################################################
+## USERS ENDPOINTS BELOW
+###################################################################
+
+@app.post("/users", status_code=status.HTTP_201_CREATED, response_model = schema.UserResponse)
+def create_user(user: schema.UserCreate, db: Session = Depends(get_db)):
+    new_user = models.Users(**user.dict())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
  
