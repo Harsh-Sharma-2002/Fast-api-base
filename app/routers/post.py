@@ -6,16 +6,16 @@ from typing import List
 from ..database import engine, get_db
 
 
-router = APIRouter()
+router = APIRouter(prefix="/posts", tags=["Posts"])
 
-@router.get("/posts",response_model = List[schema.ResponsePost])
+@router.get("/",response_model = List[schema.ResponsePost])
 def get_post(db: Session = Depends(get_db)):
     posts = db.query(models.PostModel).all()
     return posts
 
 ###################################################################
 
-@router.get("/posts/{id}",response_model = schema.ResponsePost)
+@router.get("/{id}",response_model = schema.ResponsePost)
 async def get_post(id: int,db: Session = Depends(get_db)): ## We take in id as int to avoid SQL injection
     #  cursor.execute("SELECT * FROM posts WHERE id = %s", (str(id),)) ## Used extra comma to make it a tuple
     #  cursor_post = cursor.fetchone()
@@ -31,7 +31,7 @@ async def get_post(id: int,db: Session = Depends(get_db)): ## We take in id as i
 
 ###################################################################
 
-@router.post("/posts", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 def create_post(new_post: schema.CreatePost,db: Session = Depends(get_db)):
     # cursor.execute("INSERT INTO posts (title,content,published) VALUES (%s,%s,%s) RETURNING *",
     #                (new_post.title, new_post.content, new_post.published))
@@ -45,7 +45,7 @@ def create_post(new_post: schema.CreatePost,db: Session = Depends(get_db)):
 
 ###################################################################
 
-@router.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}",status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int, db: Session = Depends(get_db)):
 #     cursor.execute("DELETE FROM posts WHERE id = %s RETURNING *", (str(id),))
 #     deleted_post = cursor.fetchone()
@@ -64,7 +64,7 @@ def delete_post(id: int, db: Session = Depends(get_db)):
 
 ###################################################################
 
-@router.put("/posts/{id}",response_model = schema.ResponsePost)
+@router.put("/{id}",response_model = schema.ResponsePost)
 def update_post(id: int, updated_post: schema.UpdatePost, db: Session = Depends(get_db)):
 #     cursor.execute("UPDATE posts SET title = %s,content = %s,published = %s WHERE id = %s RETURNING *",
 #                    (updated_post.title, updated_post.content, updated_post.published, str(id)))

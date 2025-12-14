@@ -4,14 +4,14 @@ from .. import models,schema, utils
 from ..database import get_db
 
 
-router = APIRouter()
+router = APIRouter(prefix="/users", tags=["Users"])
 
 
 ##################################################################
 ## USERS ENDPOINTS BELOW
 ###################################################################
 
-@router.post("/users", status_code=status.HTTP_201_CREATED, response_model = schema.UserResponse)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model = schema.UserResponse)
 def create_user(user: schema.UserCreate, db: Session = Depends(get_db)):
     
     # Hashing password
@@ -27,7 +27,7 @@ def create_user(user: schema.UserCreate, db: Session = Depends(get_db)):
 ###################################################################
 
 
-@router.get("/users/{id}", response_model = schema.UserResponse)
+@router.get("/{id}", response_model = schema.UserResponse)
 def ge_user(id : int, db: Session = Depends(get_db)):
     user = db.query(models.Users).filter(models.Users.id == id).first()
     if not user:
